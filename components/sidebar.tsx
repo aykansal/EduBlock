@@ -1,20 +1,30 @@
-"use client"
+"use client";
 
-import { BarChart, BookOpen, Home, Layout, Settings, PlusCircle } from 'lucide-react'
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import {
+  BarChart,
+  BookOpen,
+  Home,
+  Layout,
+  Settings,
+  PlusCircle,
+  LucideLoader,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { WalletSection } from "./wallet-section";
 
 export function Sidebar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   const links = [
     { href: "/", label: "Dashboard", icon: Home },
     { href: "/courses", label: "Courses", icon: BookOpen },
     { href: "/progress", label: "Progress", icon: BarChart },
+    { href: "/leaderboard", label: "Leaderboard", icon: LucideLoader },
     { href: "/rewards", label: "Rewards", icon: Layout },
     { href: "/settings", label: "Settings", icon: Settings },
-  ]
+  ];
 
   return (
     <div className="flex flex-col w-64 bg-muted/50 border-r border-border">
@@ -38,8 +48,8 @@ export function Sidebar() {
             </li>
           ))}
         </ul>
+          <WalletSection />
       </nav>
     </div>
-  )
+  );
 }
-
