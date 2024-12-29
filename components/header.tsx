@@ -38,10 +38,10 @@ export function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel><a href="">My Account</a></DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem><a href="">Settings</a></DropdownMenuItem>
               <DropdownMenuItem>Help</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Log out</DropdownMenuItem>

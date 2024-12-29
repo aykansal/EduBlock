@@ -14,6 +14,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { WalletSection } from "./wallet-section";
 
+
 export function Sidebar() {
   const pathname = usePathname();
 

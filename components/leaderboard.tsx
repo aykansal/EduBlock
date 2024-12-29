@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { User } from '../types/user';
 import { Button } from "@/components/ui/button"
+// import { Image } from 'lucide-react';
 
 // Sample user data
 const users: User[] = [

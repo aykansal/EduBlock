@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import "./globals.css"
 import { Sidebar } from "@/components/sidebar"
 import { Header } from "@/components/header"
+import { ThirdWebClientProvider } from "@/components/ThirdWebClientProvider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -20,6 +21,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <ThirdWebClientProvider>
+          
         <div className="flex h-screen bg-background">
           <Sidebar />
           <div className="flex-1 flex flex-col overflow-hidden">
@@ -29,6 +32,7 @@ export default function RootLayout({
             </main>
           </div>
         </div>
+        </ThirdWebClientProvider>
       </body>
     </html>
   )

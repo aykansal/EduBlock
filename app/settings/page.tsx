@@ -4,12 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ProfileSection } from "@/components/profile-section"
 import { LearningPreferences } from "@/components/learning-preferences"
-import { WalletSection } from "@/components/wallet-section"
 import { GeneralSettings } from "@/components/general-settings"
-// import { ProfileSection } from "./profile-section"
-// import { WalletSection } from "./wallet-section"
-// import { GeneralSettings } from "./general-settings"
-// import { LearningPreferences } from "./learning-preferences"
 
 export const metadata: Metadata = {
   title: "Settings",
