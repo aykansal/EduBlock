@@ -9,14 +9,7 @@ export function WalletSection() {
   });
 
   return (
-    // <Button
-    //   className=" mx-4 px-14" // Add padding on left and right
-    //   variant="default"
-    // >
-    //   <span className="relative z-10">Connect Wallet</span> 
-    // </Button>
-    <div className="flex items-center justify-center">
-
+    <div className="flex justify-center items-center">
       <ConnectButton chain={chain} client={client} />
     </div>
   );
