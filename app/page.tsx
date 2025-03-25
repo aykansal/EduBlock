@@ -1,11 +1,16 @@
-import { RecentActivity } from "@/components/recent-activity"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { UpcomingLectures } from "@/components/upcoming-lectures"
-import { CalendarDays, GraduationCap, Trophy, PlusCircle } from 'lucide-react'
-import Link from "next/link"
+import { RecentActivity } from "@/components/recent-activity";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { UpcomingLectures } from "@/components/upcoming-lectures";
+import { CalendarDays, GraduationCap, Trophy, PlusCircle } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardPage() {
   return (
@@ -14,7 +19,9 @@ export default function DashboardPage() {
       <div className="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Current Session</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Current Session
+            </CardTitle>
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -25,22 +32,30 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">EduToken Balance</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              EduToken Balance
+            </CardTitle>
             <Trophy className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">250 EDT</div>
-            <p className="text-xs text-muted-foreground mt-2">+50 EDT this week</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              +50 EDT this week
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Next Milestone</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Next Milestone
+            </CardTitle>
             <CalendarDays className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">75 EDT</div>
-            <p className="text-xs text-muted-foreground mt-2">Complete 5 more lectures</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Complete 5 more lectures
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -50,7 +65,9 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">92%</div>
-            <p className="text-xs text-muted-foreground mt-2">Top 5% of all users</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Top 5% of all users
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -77,7 +94,9 @@ export default function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>Your Custom Courses</CardTitle>
-          <CardDescription>Courses you've created or enrolled in</CardDescription>
+          <CardDescription>
+            Courses you've created or enrolled in
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -107,7 +126,9 @@ export default function DashboardPage() {
                 <CardDescription>Design your own learning path</CardDescription>
               </CardHeader>
               <CardContent>
-                <p>Start building a new custom course tailored to your needs.</p>
+                <p>
+                  Start building a new custom course tailored to your needs.
+                </p>
                 <Button className="mt-4 w-full" asChild>
                   <Link href="/create-course">
                     <PlusCircle className="w-4 h-4 mr-2" />
@@ -120,6 +141,5 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-

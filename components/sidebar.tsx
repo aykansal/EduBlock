@@ -14,7 +14,6 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { WalletSection } from "./wallet-section";
 
-
 export function Sidebar() {
   const pathname = usePathname();
 
@@ -28,9 +27,9 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="flex flex-col w-64 bg-muted/50 border-r border-border">
-      <div className="flex items-center justify-center h-16 border-b border-border">
-        <span className="text-primary font-bold uppercase">EduBlock</span>
+    <div className="flex flex-col bg-muted/50 border-r border-border w-64">
+      <div className="flex justify-center items-center border-b border-border h-16">
+        <span className="font-bold text-primary uppercase">EduBlock</span>
       </div>
       <nav className="flex-grow">
         <ul className="flex flex-col py-4">
@@ -43,13 +42,13 @@ export function Sidebar() {
                   pathname === link.href && "bg-muted text-primary"
                 )}
               >
-                <link.icon className="h-5 w-5 mr-3" />
+                <link.icon className="mr-3 w-5 h-5" />
                 {link.label}
               </Link>
             </li>
           ))}
         </ul>
-          <WalletSection />
+        <WalletSection />
       </nav>
     </div>
   );

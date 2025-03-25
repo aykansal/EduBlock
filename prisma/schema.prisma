@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  walletId  String   @id @unique
+  username  String   @unique
+  name      String
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Settings
+  notificationsEnabled Boolean @default(true)
+  soundEffectsEnabled  Boolean @default(true)
+  darkModeEnabled      Boolean @default(false)
+
+  // Learning Preferences
+  sessionDuration Int @default(25) // in minutes
+  breakDuration   Int @default(5) // in minutes
+  sessionsPerDay  Int @default(4)
+
+  // Course relation
+  courses Course[] @relation("UserCourses")
+  
+  activeCourseId Int?    @unique
+  activeCourse   Course? @relation("ActiveCourse", fields: [activeCourseId], references: [id])
+}
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  playlistId  String   @unique
+  title       String
+  description String?
+  channelId   String
+  channelName String
+  videos      Video[]  @relation("CourseVideos")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relation to the user
+
+  userId        String?
+  User          User?   @relation("UserCourses", fields: [userId], references: [walletId])
+  activeForUser User?   @relation("ActiveCourse")
+}
+
+model Video {
+  id           Int      @id @default(autoincrement())
+  title        String
+  position     Int
+  videoId      String   @unique
+  publishedAt  DateTime
+  channelTitle String
+  thumbnail    String
+  playlistId   Int
+  playlist     Course   @relation("CourseVideos", fields: [playlistId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

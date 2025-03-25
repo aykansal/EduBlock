@@ -1,70 +1,98 @@
-import { Header } from "@/components/header"
-import { RecentActivity } from "@/components/recent-activity"
-import { Sidebar } from "@/components/sidebar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { UpcomingLectures } from "@/components/upcoming-lectures"
-import { CalendarDays, GraduationCap, Trophy } from 'lucide-react'
+import { Header } from "@/components/header";
+import { RecentActivity } from "@/components/recent-activity";
+import { Sidebar } from "@/components/sidebar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UpcomingLectures } from "@/components/upcoming-lectures";
+import { CalendarDays, GraduationCap, Trophy } from "lucide-react";
 
 export default function DashboardPage() {
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex bg-gray-100 h-screen">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex flex-col flex-1 overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-          <div className="container mx-auto px-6 py-8">
-            <h1 className="text-3xl font-semibold text-gray-800 mb-6">Dashboard</h1>
-            <div className="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
+        <main className="flex-1 bg-gray-100 overflow-x-hidden overflow-y-auto">
+          <div className="mx-auto px-6 py-8 container">
+            <h1 className="mb-6 font-semibold text-3xl text-gray-800">
+              Dashboard
+            </h1>
+            <div className="gap-6 grid md:grid-cols-2 xl:grid-cols-4 mb-8">
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Current Session</CardTitle>
-                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
+                  <CardTitle className="font-medium text-sm">
+                    Current Session
+                  </CardTitle>
+                  <GraduationCap className="w-4 h-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">Introduction to Blockchain</div>
+                  <div className="font-bold text-2xl">
+                    Introduction to Blockchain
+                  </div>
                   <Progress value={33} className="mt-2" />
-                  <p className="text-xs text-muted-foreground mt-2">33% complete</p>
+                  <p className="mt-2 text-muted-foreground text-xs">
+                    33% complete
+                  </p>
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">EduToken Balance</CardTitle>
-                  <Trophy className="h-4 w-4 text-muted-foreground" />
+                <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
+                  <CardTitle className="font-medium text-sm">
+                    EduToken Balance
+                  </CardTitle>
+                  <Trophy className="w-4 h-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">250 EDT</div>
-                  <p className="text-xs text-muted-foreground mt-2">+50 EDT this week</p>
+                  <div className="font-bold text-2xl">250 EDT</div>
+                  <p className="mt-2 text-muted-foreground text-xs">
+                    +50 EDT this week
+                  </p>
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Next Milestone</CardTitle>
-                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
+                  <CardTitle className="font-medium text-sm">
+                    Next Milestone
+                  </CardTitle>
+                  <CalendarDays className="w-4 h-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">75 EDT</div>
-                  <p className="text-xs text-muted-foreground mt-2">Complete 5 more lectures</p>
+                  <div className="font-bold text-2xl">75 EDT</div>
+                  <p className="mt-2 text-muted-foreground text-xs">
+                    Complete 5 more lectures
+                  </p>
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Focus Score</CardTitle>
-                  <Trophy className="h-4 w-4 text-muted-foreground" />
+                <CardHeader className="flex flex-row justify-between items-center space-y-0 pb-2">
+                  <CardTitle className="font-medium text-sm">
+                    Focus Score
+                  </CardTitle>
+                  <Trophy className="w-4 h-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">92%</div>
-                  <p className="text-xs text-muted-foreground mt-2">Top 5% of all users</p>
+                  <div className="font-bold text-2xl">92%</div>
+                  <p className="mt-2 text-muted-foreground text-xs">
+                    Top 5% of all users
+                  </p>
                 </CardContent>
               </Card>
             </div>
-            <div className="grid gap-6 mb-8 md:grid-cols-2">
+            <div className="gap-6 grid md:grid-cols-2 mb-8">
               <Card>
                 <CardHeader>
                   <CardTitle>Recent Activity</CardTitle>
-                  <CardDescription>Your learning progress this week</CardDescription>
+                  <CardDescription>
+                    Your learning progress this week
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <RecentActivity />
@@ -73,7 +101,9 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Upcoming Lectures</CardTitle>
-                  <CardDescription>Your schedule for the next 7 days</CardDescription>
+                  <CardDescription>
+                    Your schedule for the next 7 days
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <UpcomingLectures />
@@ -83,7 +113,9 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Rewards</CardTitle>
-                <CardDescription>Redeem your EduTokens for perks</CardDescription>
+                <CardDescription>
+                  Redeem your EduTokens for perks
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="available" className="w-full">
@@ -92,14 +124,17 @@ export default function DashboardPage() {
                     <TabsTrigger value="redeemed">Redeemed</TabsTrigger>
                   </TabsList>
                   <TabsContent value="available">
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="gap-4 grid md:grid-cols-2 lg:grid-cols-3">
                       <Card>
                         <CardHeader>
                           <CardTitle>Course Certificate</CardTitle>
                           <CardDescription>100 EDT</CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <p>Get a verified certificate for completing this course.</p>
+                          <p>
+                            Get a verified certificate for completing this
+                            course.
+                          </p>
                           <Button className="mt-4 w-full">Redeem</Button>
                         </CardContent>
                       </Card>
@@ -109,7 +144,10 @@ export default function DashboardPage() {
                           <CardDescription>250 EDT</CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <p>30-minute one-on-one session with a course instructor.</p>
+                          <p>
+                            30-minute one-on-one session with a course
+                            instructor.
+                          </p>
                           <Button className="mt-4 w-full">Redeem</Button>
                         </CardContent>
                       </Card>
@@ -119,7 +157,9 @@ export default function DashboardPage() {
                           <CardDescription>500 EDT</CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <p>Unlock access to a premium course of your choice.</p>
+                          <p>
+                            Unlock access to a premium course of your choice.
+                          </p>
                           <Button className="mt-4 w-full">Redeem</Button>
                         </CardContent>
                       </Card>
@@ -135,6 +175,5 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
-  )
+  );
 }
-
