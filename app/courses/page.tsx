@@ -1,56 +1,93 @@
 "use client";
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+
 import axios from "axios";
+import { Loader2 } from "lucide-react";
+import { Video, Course } from "@/types/courses";
+import React, { useState, FormEvent, useEffect } from "react";
+import { extractPlaylistId } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
+// Utility function to validate YouTube URL
+const validateUrl = (url: string) => {
+  const playlistId = extractPlaylistId(url);
+  if (!playlistId) {
+    toast.error("Invalid YouTube playlist URL. Please enter a valid URL.");
+  }
+  return playlistId;
+};
 
 const YoutubePlaylist = () => {
-  const [url, setUrl] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [videos, setVideos] = useState([]);
-  const [error, setError] = useState<string>("");
+  const [url, setUrl] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
+  const walletId = "0xDed2C93821726a38996Ac3d74692C0fA7C8F94C6"; // Make sure to set this dynamically
 
-  const extractPlaylistId = (url: string) => {
+  // Fetch enrolled courses
+  const fetchEnrolledCourses = async () => {
+    console.log("hi");
     try {
-      const urlObj = new URL(url);
-      const params = new URLSearchParams(urlObj.search);
-      const playlistId = params.get("list");
-      return playlistId;
+      const response = await axios.get(`/api/courses?walletId=${walletId}`);
+      console.log(response.data);
+      setEnrolledCourses(response.data.courses);
     } catch (error) {
-      return null;
+      console.error("Error fetching enrolled courses:", error);
+      toast.error("Failed to load enrolled courses");
     }
   };
 
-  const fetchPlaylistData = async (e: any) => {
+  const fetchPlaylistData = async (e: FormEvent) => {
     e.preventDefault();
-    const playlistId = extractPlaylistId(url);
-    if (!playlistId) {
-      setError("Invalid YouTube playlist URL. Please enter a valid URL.");
-      return;
-    }
+
+    const playlistId = validateUrl(url);
+    if (!playlistId) return;
 
     setIsLoading(true);
-    setError("");
+
     try {
-      const response = await axios.get(
-        `/api/courses/add?playlistId=${playlistId}`
-      );
-      if (!response) throw new Error("Failed to fetch playlist data");
-      const data = await response.data;
-      console.log(data.videos);
-      setVideos(data.videos);
+      const response = await axios.post("/api/courses/add", {
+        playlistId,
+        walletId,
+      });
+
+      if (
+        response.status === 200 &&
+        response.data.message === "Course already exists"
+      ) {
+        toast("Course already exists.");
+        return;
+      }
+
+      if (response.status === 201) {
+        toast.success("Playlist added to your Courses!");
+        fetchEnrolledCourses(); // Refresh the courses list
+      }
     } catch (err: any) {
-      setError(err?.message);
+      if (
+        err.response?.status === 400 &&
+        err.response?.data.message === "Playlist ID is required"
+      ) {
+        toast.error("Invalid YouTube playlist URL. Please enter a valid URL.");
+      } else {
+        toast.error(err.message || "An error occurred while fetching data.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchEnrolledCourses();
+  }, []);
+
   return (
-    <div className="mx-auto p-4 w-full max-w-4xl">
+    <div className="mx-auto p-4 w-full max-w-4xl space-y-8">
+      {/* Add New Course Section */}
       <Card>
         <CardHeader>
-          <CardTitle>YouTube Playlist Viewer</CardTitle>
+          <CardTitle>Add New Course</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={fetchPlaylistData} className="mb-6">
@@ -63,10 +100,10 @@ const YoutubePlaylist = () => {
                 className="flex-1 px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 required
               />
-              <button
+              <Button
                 type="submit"
-                className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 px-6 py-2 rounded text-white transition-colors"
                 disabled={isLoading}
+                className="min-w-[120px]"
               >
                 {isLoading ? (
                   <span className="flex justify-center items-center">
@@ -74,41 +111,59 @@ const YoutubePlaylist = () => {
                     Loading...
                   </span>
                 ) : (
-                  "Load Playlist"
+                  "Add Course"
                 )}
-              </button>
+              </Button>
             </div>
           </form>
+        </CardContent>
+      </Card>
 
-          {error && (
-            <div className="bg-red-50 mb-4 p-4 rounded text-red-500">
-              {error}
+      {/* Enrolled Courses Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Courses</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {enrolledCourses.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              {enrolledCourses.map((course: Course) => (
+                <Link
+                  href={`/courses/${course.id}`}
+                  key={course.id}
+                  className="block"
+                >
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="aspect-video relative mb-4">
+                        <img
+                          src={
+                            course.videos[0]?.thumbnail ||
+                            "/placeholder-course.jpg"
+                          }
+                          alt={course.title}
+                          className="rounded-lg object-cover w-full h-full"
+                        />
+                      </div>
+                      <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                        {course.title}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {course.videoCount} videos
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>You haven't enrolled in any courses yet.</p>
+              <p className="text-sm mt-2">
+                Add a course using the form above to get started!
+              </p>
             </div>
           )}
-
-          <div className="space-y-4">
-            {videos.map((video: any) => (
-              <div
-                key={video.videoId}
-                className="hover:bg-gray-50 p-4 border rounded-lg transition-colors"
-              >
-                <div className="flex items-start gap-4">
-                  <img
-                    src={video.thumbnail}
-                    alt={video.title}
-                    className="rounded"
-                  />
-                  <div>
-                    <h3 className="font-medium text-lg">{video.title}</h3>
-                    <p className="text-gray-600">{video.channelTitle}</p>
-                    <p className="text-gray-500 text-sm">
-                      {new Date(video.publishedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </CardContent>
       </Card>
     </div>

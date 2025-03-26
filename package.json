@@ -19,6 +19,7 @@
     "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-switch": "^1.1.2",
     "@radix-ui/react-tabs": "^1.1.2",
+    "@types/youtube-player": "^5.5.11",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -33,6 +34,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "thirdweb": "^5.85.0",
+    "youtube-player": "^5.6.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

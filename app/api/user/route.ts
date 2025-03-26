@@ -29,14 +29,7 @@ export async function POST(req: Request) {
     const newUser = await prisma.user.create({
       data: {
         username,
-        name: username,
         walletId: walletAddress,
-        notificationsEnabled: true,
-        soundEffectsEnabled: true,
-        darkModeEnabled: false,
-        sessionDuration: 25,
-        breakDuration: 5,
-        sessionsPerDay: 4
       }
     });
 

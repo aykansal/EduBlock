@@ -25,7 +25,8 @@ export function Header() {
           {showProgress && (
             <div className="flex items-center space-x-2">
               <Progress value={33} className="w-40" />
-              <span className="text-sm text-muted-foreground">33% complete</span>
+              <span className="text-sm text-muted-foreground">Daily Streak</span>
+              {/* <span className="text-sm text-muted-foreground">33% complete</span> */}
             </div>
           )}
           <Button variant="ghost" size="icon">

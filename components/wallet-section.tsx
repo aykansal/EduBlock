@@ -53,9 +53,14 @@ export function WalletSection() {
         throw new Error(data.error || "Failed to process user");
       }
 
-      showSuccessToast("Wallet connected successfully", "Your account is now ready");
+      showSuccessToast(
+        "Wallet connected successfully",
+        "Your account is now ready"
+      );
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to connect wallet");
+      setError(
+        error instanceof Error ? error.message : "Failed to connect wallet"
+      );
       showErrorToast(error);
     } finally {
       setIsLoading(false);
