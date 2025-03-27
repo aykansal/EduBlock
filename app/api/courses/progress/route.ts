@@ -25,22 +25,27 @@ export async function POST(request: NextRequest) {
         });
 
         if (existingProgress) {
-            // Update existing progress
-            const updatedProgress = await prisma.videoProgress.update({
-                where: {
-                    userId_videoId: {
-                        userId: walletId,
-                        videoId: videoId
+            // Only update if new progress is greater than existing progress
+            if (progress > existingProgress.progress) {
+                const updatedProgress = await prisma.videoProgress.update({
+                    where: {
+                        userId_videoId: {
+                            userId: walletId,
+                            videoId: videoId
+                        }
+                    },
+                    data: {
+                        progress,
+                        completed: completed || existingProgress.completed,
+                        lastWatched: new Date()
                     }
-                },
-                data: {
-                    progress,
-                    completed: completed || existingProgress.completed,
-                    lastWatched: new Date()
-                }
-            });
+                });
 
-            return NextResponse.json({ progress: updatedProgress });
+                return NextResponse.json({ progress: updatedProgress });
+            } else {
+                // Return existing progress without updating
+                return NextResponse.json({ progress: existingProgress });
+            }
         } else {
             // Create new progress entry
             const newProgress = await prisma.videoProgress.create({

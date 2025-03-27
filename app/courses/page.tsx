@@ -1,7 +1,6 @@
 "use client";
 
-import axios from "axios";
-import { Loader2 } from "lucide-react";
+import { Loader2, BookOpen } from "lucide-react";
 import { Video, Course } from "@/types/courses";
 import React, { useState, FormEvent, useEffect } from "react";
 import { extractPlaylistId } from "@/lib/utils";
@@ -9,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
+import { getUserCourses, DEFAULT_WALLET_ID } from "@/lib/api";
 
 // Utility function to validate YouTube URL
 const validateUrl = (url: string) => {
@@ -19,22 +20,37 @@ const validateUrl = (url: string) => {
   return playlistId;
 };
 
+const CourseThumbnailFallback = ({ title }: { title: string }) => {
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100 rounded-lg">
+      <div className="flex flex-col items-center justify-center p-4 text-center">
+        <BookOpen className="text-blue-400 mb-2" size={32} />
+        <span className="text-sm text-gray-600 font-medium line-clamp-2">
+          {title || "Course"}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 const YoutubePlaylist = () => {
   const [url, setUrl] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isCoursesLoading, setIsCoursesLoading] = useState<boolean>(true);
   const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
-  const walletId = "0xDed2C93821726a38996Ac3d74692C0fA7C8F94C6"; // Make sure to set this dynamically
+  const walletId = DEFAULT_WALLET_ID; // Using our centralized wallet ID
 
-  // Fetch enrolled courses
+  // Fetch enrolled courses using our unified API function
   const fetchEnrolledCourses = async () => {
-    console.log("hi");
     try {
-      const response = await axios.get(`/api/courses?walletId=${walletId}`);
-      console.log(response.data);
-      setEnrolledCourses(response.data.courses);
+      setIsCoursesLoading(true);
+      const courses = await getUserCourses(walletId);
+      setEnrolledCourses(courses);
     } catch (error) {
       console.error("Error fetching enrolled courses:", error);
       toast.error("Failed to load enrolled courses");
+    } finally {
+      setIsCoursesLoading(false);
     }
   };
 
@@ -125,7 +141,11 @@ const YoutubePlaylist = () => {
           <CardTitle>Your Courses</CardTitle>
         </CardHeader>
         <CardContent>
-          {enrolledCourses.length > 0 ? (
+          {isCoursesLoading ? (
+            <div className="flex justify-center items-center py-10">
+              <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+            </div>
+          ) : enrolledCourses.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
               {enrolledCourses.map((course: Course) => (
                 <Link
@@ -133,9 +153,9 @@ const YoutubePlaylist = () => {
                   key={course.id}
                   className="block"
                 >
-                  <Card className="hover:shadow-lg transition-shadow">
+                  <Card className="hover:shadow-lg transition-shadow h-full">
                     <CardContent className="p-4">
-                      <div className="aspect-video relative mb-4">
+                      <div className="aspect-video relative mb-4 bg-gray-100 rounded-lg overflow-hidden">
                         <img
                           src={
                             course.videos[0]?.thumbnail ||
@@ -143,14 +163,28 @@ const YoutubePlaylist = () => {
                           }
                           alt={course.title}
                           className="rounded-lg object-cover w-full h-full"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
                         />
+                        <div className="hidden absolute inset-0">
+                          <CourseThumbnailFallback title={course.title} />
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity"></div>
                       </div>
                       <h3 className="font-semibold text-lg mb-2 line-clamp-2">
                         {course.title}
                       </h3>
-                      <p className="text-sm text-gray-600">
-                        {course.videoCount} videos
-                      </p>
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm text-gray-600">
+                          {course.videoCount} videos
+                        </p>
+                        <div className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full">
+                          Course
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </Link>

@@ -1,14 +1,59 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 
-export function LearningPreferences() {
-  const [sessionDuration, setSessionDuration] = useState(40)
-  const [breakDuration, setBreakDuration] = useState(5)
-  const [sessionsPerDay, setSessionsPerDay] = useState(4)
+interface LearningPreferencesProps {
+  preferences: {
+    sessionDuration?: number;
+    breakDuration?: number;
+    sessionsPerDay?: number;
+  };
+  updatePreferences: (prefs: {
+    sessionDuration?: number;
+    breakDuration?: number;
+    sessionsPerDay?: number;
+  }) => void;
+}
+
+export function LearningPreferences({ preferences, updatePreferences }: LearningPreferencesProps) {
+  const [sessionDuration, setSessionDuration] = useState(preferences.sessionDuration || 40)
+  const [breakDuration, setBreakDuration] = useState(preferences.breakDuration || 5)
+  const [sessionsPerDay, setSessionsPerDay] = useState(preferences.sessionsPerDay || 4)
+
+  // Update component state when props change
+  useEffect(() => {
+    setSessionDuration(preferences.sessionDuration || 40);
+    setBreakDuration(preferences.breakDuration || 5);
+    setSessionsPerDay(preferences.sessionsPerDay || 4);
+  }, [preferences]);
+  
+  // Update parent state when local state changes
+  const handleSessionDurationChange = (value: number) => {
+    setSessionDuration(value);
+    updatePreferences({
+      ...preferences,
+      sessionDuration: value
+    });
+  };
+
+  const handleBreakDurationChange = (value: number) => {
+    setBreakDuration(value);
+    updatePreferences({
+      ...preferences,
+      breakDuration: value
+    });
+  };
+
+  const handleSessionsPerDayChange = (value: number) => {
+    setSessionsPerDay(value);
+    updatePreferences({
+      ...preferences,
+      sessionsPerDay: value
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -24,13 +69,13 @@ export function LearningPreferences() {
               max={120}
               step={5}
               value={[sessionDuration]}
-              onValueChange={(value) => setSessionDuration(value[0])}
+              onValueChange={(value) => handleSessionDurationChange(value[0])}
               className="flex-grow"
             />
             <Input
               type="number"
               value={sessionDuration}
-              onChange={(e) => setSessionDuration(Number(e.target.value))}
+              onChange={(e) => handleSessionDurationChange(Number(e.target.value))}
               className="w-20"
             />
           </div>
@@ -45,13 +90,13 @@ export function LearningPreferences() {
               max={30}
               step={1}
               value={[breakDuration]}
-              onValueChange={(value) => setBreakDuration(value[0])}
+              onValueChange={(value) => handleBreakDurationChange(value[0])}
               className="flex-grow"
             />
             <Input
               type="number"
               value={breakDuration}
-              onChange={(e) => setBreakDuration(Number(e.target.value))}
+              onChange={(e) => handleBreakDurationChange(Number(e.target.value))}
               className="w-20"
             />
           </div>
@@ -66,13 +111,13 @@ export function LearningPreferences() {
               max={10}
               step={1}
               value={[sessionsPerDay]}
-              onValueChange={(value) => setSessionsPerDay(value[0])}
+              onValueChange={(value) => handleSessionsPerDayChange(value[0])}
               className="flex-grow"
             />
             <Input
               type="number"
               value={sessionsPerDay}
-              onChange={(e) => setSessionsPerDay(Number(e.target.value))}
+              onChange={(e) => handleSessionsPerDayChange(Number(e.target.value))}
               className="w-20"
             />
           </div>
@@ -81,4 +126,3 @@ export function LearningPreferences() {
     </div>
   )
 }
-

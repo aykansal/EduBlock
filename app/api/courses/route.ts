@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
                     orderBy: {
                         position: 'asc'
                     },
-                    take: 1 // Only get the first video for the thumbnail
+                    // take: 1 // Only get the first video for the thumbnail
                 }
             },
             orderBy: {

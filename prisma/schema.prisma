@@ -11,6 +11,7 @@ model User {
   walletId String  @id @unique
   username String  @unique // ask user on signup itself
   email    String? @unique
+  avatar   String? // User avatar URL
 
   // Course relation
   courses        Course[] @relation("UserCourses")
@@ -19,19 +20,22 @@ model User {
 
   // Video progress relation
   videoProgress VideoProgress[]
+  
+  // Scheduled lectures relation
+  scheduledLectures ScheduledLecture[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // // Settings
-  // notificationsEnabled Boolean? @default(true)
-  // soundEffectsEnabled  Boolean? @default(true)
-  // darkModeEnabled      Boolean? @default(false)
+  // Settings
+  notificationsEnabled Boolean? @default(true)
+  darkModeEnabled      Boolean? @default(false)
+  soundEffectsEnabled  Boolean? @default(true)
 
-  // // Learning Preferences
-  // sessionDuration Int? @default(25) // in minutes
-  // breakDuration   Int? @default(5) // in minutes
-  // sessionsPerDay  Int? @default(4)
+  // Learning Preferences
+  sessionDuration Int? @default(40) // in minutes
+  breakDuration   Int? @default(5) // in minutes
+  sessionsPerDay  Int? @default(4)
 }
 
 model Course {
@@ -39,7 +43,7 @@ model Course {
   playlistId String   @unique // course ID
   title      String
   videos     Video[]  @relation("CourseVideos")
-  videoCount Int?
+  videoCount Int
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   // Relation to the user
@@ -49,6 +53,9 @@ model Course {
 
   // Video progress relation
   videoProgress VideoProgress[]
+  
+  // Scheduled lectures relation
+  scheduledLectures ScheduledLecture[]
 }
 
 model Video {
@@ -66,6 +73,9 @@ model Video {
 
   // Video progress relation
   videoProgress VideoProgress[]
+  
+  // Scheduled lectures relation
+  scheduledLectures ScheduledLecture[]
 }
 
 model VideoProgress {
@@ -84,4 +94,21 @@ model VideoProgress {
 
   // Compound unique index to ensure one progress record per user per video
   @@unique([userId, videoId])
+}
+
+model ScheduledLecture {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [walletId])
+  videoId   String
+  video     Video    @relation(fields: [videoId], references: [videoId])
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id])
+  date      DateTime
+  duration  Int      @default(60) // Duration in minutes
+  title     String?  // Optional custom title
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, videoId, date])
 }

@@ -5,7 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { Video, Course } from "@/types/courses";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, AlertCircle, CheckCircle } from "lucide-react";
+import {
+  Loader2,
+  ArrowLeft,
+  AlertCircle,
+  CheckCircle,
+  BookOpen,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
@@ -29,6 +35,20 @@ interface VideoProgress {
   completed: boolean;
 }
 
+// Add this helper component for fallback thumbnails
+const ThumbnailFallback = ({ title }: { title: string }) => {
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded">
+      <div className="flex flex-col items-center justify-center p-2 text-center">
+        <BookOpen className="text-gray-400 mb-1" size={16} />
+        <span className="text-xs text-gray-500 line-clamp-1">
+          {title || "Video"}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 const CourseDetail = () => {
   const params = useParams();
   const router = useRouter();
@@ -43,68 +63,68 @@ const CourseDetail = () => {
   const [currentVideoProgress, setCurrentVideoProgress] = useState<number>(0);
   const walletId = "0xDed2C93821726a38996Ac3d74692C0fA7C8F94C6"; // Make sure to set this dynamically
 
-  useEffect(() => {
-    const fetchCourse = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        // Fetch course details
-        const courseResponse = await axios.get(
-          `/api/courses/${params.courseId}`
+  const fetchCourse = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Fetch course details
+      const courseResponse = await axios.get(`/api/courses/${params.courseId}`);
+      setCourse(courseResponse.data.course);
+
+      // Fetch progress for this course
+      const progressResponse = await axios.get(
+        `/api/courses/progress?walletId=${walletId}&courseId=${params.courseId}`
+      );
+
+      // Create a map of video progress
+      const progressMap: Record<string, VideoProgress> = {};
+      progressResponse.data.progress.forEach((p: any) => {
+        progressMap[p.videoId] = {
+          videoId: p.videoId,
+          progress: p.progress,
+          completed: p.completed,
+        };
+      });
+      setVideoProgress(progressMap);
+
+      // Set the initial video - either the last watched or the first one
+      const lastWatchedVideoId = progressResponse.data.lastWatchedVideo;
+      console.log(lastWatchedVideoId);
+      if (lastWatchedVideoId) {
+        const lastWatchedVideo = courseResponse.data.course.videos.find(
+          (v: Video) => v.videoId === lastWatchedVideoId
         );
-        setCourse(courseResponse.data.course);
+        console.log("lastWatchedVideo", lastWatchedVideo);
+        handleVideoSelect(lastWatchedVideo);
+        // setSelectedVideo(lastWatchedVideo);
 
-        // Fetch progress for this course
-        const progressResponse = await axios.get(
-          `/api/courses/progress?walletId=${walletId}&courseId=${params.courseId}`
-        );
-
-        // Create a map of video progress
-        const progressMap: Record<string, VideoProgress> = {};
-        progressResponse.data.progress.forEach((p: any) => {
-          progressMap[p.videoId] = {
-            videoId: p.videoId,
-            progress: p.progress,
-            completed: p.completed,
-          };
-        });
-        setVideoProgress(progressMap);
-
-        // Set the initial video - either the last watched or the first one
-        const lastWatchedVideoId = progressResponse.data.lastWatchedVideo;
-
-        if (
-          lastWatchedVideoId &&
-          courseResponse.data.course.videos.find(
-            (v: Video) => v.videoId === lastWatchedVideoId
-          )
-        ) {
-          const lastWatchedVideo = courseResponse.data.course.videos.find(
-            (v: Video) => v.videoId === lastWatchedVideoId
-          );
-          setSelectedVideo(lastWatchedVideo);
-
-          if (progressMap[lastWatchedVideoId]) {
-            setCurrentVideoProgress(progressMap[lastWatchedVideoId].progress);
-          }
-        } else if (courseResponse.data.course.videos.length > 0) {
-          setSelectedVideo(courseResponse.data.course.videos[0]);
-
-          if (progressMap[courseResponse.data.course.videos[0].videoId]) {
-            setCurrentVideoProgress(
-              progressMap[courseResponse.data.course.videos[0].videoId].progress
-            );
-          }
+        if (progressMap[lastWatchedVideoId]) {
+          setCurrentVideoProgress(progressMap[lastWatchedVideoId].progress);
         }
-      } catch (error: any) {
-        console.error("Error fetching course:", error);
-        setError(error.response?.data?.message || "Failed to load course");
-        toast.error("Failed to load course");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      } else if (courseResponse.data.course.videos.length > 0) {
+        console.log(
+          "courseResponse.data.course.videos[0]",
+          courseResponse.data.course.videos[0]
+        );
+        handleVideoSelect(courseResponse.data.course.videos[0]);
+        // setSelectedVideo(courseResponse.data.course.videos[0]);
 
+        if (progressMap[courseResponse.data.course.videos[0].videoId]) {
+          setCurrentVideoProgress(
+            progressMap[courseResponse.data.course.videos[0].videoId].progress
+          );
+        }
+      }
+    } catch (error: any) {
+      console.error("Error fetching course:", error);
+      setError(error.response?.data?.message || "Failed to load course");
+      toast.error("Failed to load course");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchCourse();
   }, [params.courseId, walletId]);
 
@@ -328,12 +348,22 @@ const CourseDetail = () => {
                       }`}
                     >
                       <div className="flex gap-3">
-                        <div className="relative">
+                        <div className="relative flex-shrink-0 w-24 h-16">
                           <img
                             src={video.thumbnail}
                             alt={video.title}
-                            className="w-24 h-16 object-cover rounded"
+                            className="w-24 h-16 object-cover rounded bg-gray-100"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                              e.currentTarget.nextElementSibling?.classList.remove(
+                                "hidden"
+                              );
+                            }}
                           />
+                          <div className="hidden absolute inset-0">
+                            <ThumbnailFallback title={video.title} />
+                          </div>
 
                           {/* Progress indicator */}
                           {progress.progress > 0 && !progress.completed && (
@@ -360,12 +390,12 @@ const CourseDetail = () => {
                               </div>
                             )}
                         </div>
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <h3 className="font-medium text-sm line-clamp-2">
                             {video.title}
                           </h3>
                           <div className="flex justify-between items-center mt-1">
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 truncate max-w-[70%]">
                               {video.channelTitle}
                             </p>
 

@@ -3,15 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { courseId: string } }
+    { params }: { params: Promise<{ courseId: string }> } 
 ) {
     try {
-        if (!params || !params.courseId) {
+        const resolvedParams = await params;
+
+        if (!resolvedParams || !resolvedParams.courseId) {
             return NextResponse.json({ error: 'Course ID is missing' }, { status: 400 });
         }
-        
-        const courseId = parseInt(params.courseId);
 
+        const courseId = parseInt(resolvedParams.courseId);
+        
         if (isNaN(courseId)) {
             return NextResponse.json(
                 { message: 'Invalid course ID' },

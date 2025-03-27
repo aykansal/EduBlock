@@ -7,7 +7,7 @@ export interface Playlist {
 }
 
 export interface UserProgress {
-  currentPlaylist: Playlist;
+  currentPlaylist: Playlist | null;
   completedPlaylists: Playlist[];
   recommendedPlaylists: Playlist[];
   dailyTarget: {
@@ -17,4 +17,3 @@ export interface UserProgress {
     breakDuration: number;
   };
 }
-
