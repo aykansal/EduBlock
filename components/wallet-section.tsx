@@ -12,9 +12,10 @@ import { apiCache } from "@/lib/cache-utils";
 
 interface WalletSectionProps {
   showText?: boolean;
+  minimal?: boolean;
 }
 
-export function WalletSection({ showText = false }: WalletSectionProps) {
+export function WalletSection({ showText = false, minimal = false }: WalletSectionProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const account = useActiveAccount();
@@ -81,6 +82,19 @@ export function WalletSection({ showText = false }: WalletSectionProps) {
   };
 
   if (account) {
+    if (minimal) {
+      return (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleDisconnect}
+          className="text-sm"
+        >
+          {account.address.substring(0, 4)}...{account.address.substring(account.address.length - 4)}
+        </Button>
+      );
+    }
+    
     return (
       <div className="px-2 py-3">
         {showText && <div className="mb-2 text-sm font-medium">Connected Wallet</div>}
@@ -97,6 +111,18 @@ export function WalletSection({ showText = false }: WalletSectionProps) {
             Disconnect
           </Button>
         </div>
+      </div>
+    );
+  }
+
+  if (minimal) {
+    return (
+      <div className="text-sm">
+        <ConnectButton
+          client={client}
+          chain={chain}
+          wallets={[createWallet("io.metamask")]}
+        />
       </div>
     );
   }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { CalendarDays } from 'lucide-react';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import { CalendarDays } from "lucide-react";
+import axios from "axios";
+import { useActiveAccount } from 'thirdweb/react';
 
 interface Lecture {
   id: number;
@@ -15,35 +16,36 @@ interface Lecture {
 export function UpcomingLectures() {
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const walletId = "0xDed2C93821726a38996Ac3d74692C0fA7C8F94C6"; // Should be set dynamically
-  
+  const account = useActiveAccount();
+
   useEffect(() => {
     const fetchLectures = async () => {
+      if (!account) return;
       try {
-        const response = await axios.get(`/api/dashboard?walletId=${walletId}`);
+        const response = await axios.get(`/api/dashboard?walletId=${account.address}`);
         if (response.data.upcomingLectures) {
           setLectures(response.data.upcomingLectures);
         }
       } catch (error) {
         console.error("Error fetching upcoming lectures:", error);
         // Set some fallback data if fetch fails
-        setLectures([
-          { id: 1, title: "Introduction to Smart Contracts", date: "Today, 2:00 PM", duration: "1 hour" },
-          { id: 2, title: "Cryptography in Blockchain", date: "Tomorrow, 10:00 AM", duration: "1.5 hours" }
-        ]);
+        setLectures([]);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchLectures();
-  }, []);
+  }, [account]);
 
   if (isLoading) {
     return (
       <div className="space-y-4">
         {[...Array(3)].map((_, index) => (
-          <div key={index} className="flex items-center space-x-4 animate-pulse">
+          <div
+            key={index}
+            className="flex items-center space-x-4 animate-pulse"
+          >
             <div className="h-5 w-5 rounded-full bg-gray-200" />
             <div className="flex-1 space-y-1">
               <div className="h-4 w-3/4 bg-gray-200 rounded"></div>
@@ -77,7 +79,9 @@ export function UpcomingLectures() {
             )}
             <p className="text-sm text-muted-foreground">{lecture.date}</p>
           </div>
-          <div className="text-sm text-muted-foreground">{lecture.duration}</div>
+          <div className="text-sm text-muted-foreground">
+            {lecture.duration}
+          </div>
         </div>
       ))}
     </div>

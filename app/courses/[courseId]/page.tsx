@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
+import { useActiveAccount } from "thirdweb/react";
 
 // Dynamically import the YouTube player component to avoid SSR issues
 const YouTubePlayer = dynamic(() => import("@/components/YouTubePlayer"), {
@@ -61,9 +62,13 @@ const CourseDetail = () => {
     Record<string, VideoProgress>
   >({});
   const [currentVideoProgress, setCurrentVideoProgress] = useState<number>(0);
-  const walletId = "0xDed2C93821726a38996Ac3d74692C0fA7C8F94C6"; // Make sure to set this dynamically
+  const account = useActiveAccount();
 
   const fetchCourse = async () => {
+    if (!account) {
+      router.push("/");
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -73,7 +78,7 @@ const CourseDetail = () => {
 
       // Fetch progress for this course
       const progressResponse = await axios.get(
-        `/api/courses/progress?walletId=${walletId}&courseId=${params.courseId}`
+        `/api/courses/progress?walletId=${account.address}&courseId=${params.courseId}`
       );
 
       // Create a map of video progress
@@ -126,7 +131,7 @@ const CourseDetail = () => {
 
   useEffect(() => {
     fetchCourse();
-  }, [params.courseId, walletId]);
+  }, [params.courseId, account]);
 
   const handleVideoSelect = (video: Video) => {
     setIsVideoLoading(true);
@@ -292,7 +297,7 @@ const CourseDetail = () => {
                 <YouTubePlayer
                   videoId={selectedVideo.videoId}
                   courseId={course.id}
-                  walletId={walletId}
+                  walletId={account?.address}
                   onVideoEnd={handleVideoEnd}
                   onProgress={handleVideoProgress}
                   initialProgress={currentVideoProgress}

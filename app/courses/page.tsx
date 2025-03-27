@@ -9,7 +9,8 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
-import { getUserCourses, DEFAULT_WALLET_ID } from "@/lib/api";
+import { getUserCourses } from "@/lib/api";
+import { useActiveAccount } from "thirdweb/react";
 
 // Utility function to validate YouTube URL
 const validateUrl = (url: string) => {
@@ -38,13 +39,14 @@ const YoutubePlaylist = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isCoursesLoading, setIsCoursesLoading] = useState<boolean>(true);
   const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
-  const walletId = DEFAULT_WALLET_ID; // Using our centralized wallet ID
+  const account = useActiveAccount();
 
   // Fetch enrolled courses using our unified API function
   const fetchEnrolledCourses = async () => {
+    if (!account) return;
     try {
       setIsCoursesLoading(true);
-      const courses = await getUserCourses(walletId);
+      const courses = await getUserCourses(account.address);
       setEnrolledCourses(courses);
     } catch (error) {
       console.error("Error fetching enrolled courses:", error);
@@ -56,6 +58,10 @@ const YoutubePlaylist = () => {
 
   const fetchPlaylistData = async (e: FormEvent) => {
     e.preventDefault();
+    if (!account) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
 
     const playlistId = validateUrl(url);
     if (!playlistId) return;
@@ -65,7 +71,7 @@ const YoutubePlaylist = () => {
     try {
       const response = await axios.post("/api/courses/add", {
         playlistId,
-        walletId,
+        walletId: account.address,
       });
 
       if (

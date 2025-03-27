@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, XCircle, Clock } from 'lucide-react';
 import axios from 'axios';
+import { useActiveAccount } from 'thirdweb/react';
 
 interface Activity {
   id: number;
@@ -15,12 +16,13 @@ interface Activity {
 export function RecentActivity() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const walletId = "0xDed2C93821726a38996Ac3d74692C0fA7C8F94C6"; // Should be set dynamically
+  const account = useActiveAccount();
   
   useEffect(() => {
     const fetchActivities = async () => {
+      if (!account) return;
       try {
-        const response = await axios.get(`/api/dashboard?walletId=${walletId}`);
+        const response = await axios.get(`/api/dashboard?walletId=${account.address}`);
         if (response.data.recentActivity) {
           setActivities(response.data.recentActivity);
         }
@@ -37,7 +39,7 @@ export function RecentActivity() {
     };
     
     fetchActivities();
-  }, []);
+  }, [account]);
 
   if (isLoading) {
     return (

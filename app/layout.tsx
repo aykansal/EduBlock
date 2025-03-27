@@ -1,14 +1,11 @@
 import { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/sidebar";
-import { Header } from "@/components/header";
 import { ThirdWebClientProvider } from "@/components/ThirdWebClientProvider";
-import AuthProvider from "@/components/AuthProvider";
 import { ToastProvider } from "@/components/providers/toast-provider";
-import ClientLayoutHandler from "@/components/ClientLayoutHandler";
+import LayoutProvider from "@/components/LayoutProvider";
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
@@ -29,11 +26,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThirdWebClientProvider>
           <ToastProvider>
-            <AuthProvider>
-              <ClientLayoutHandler>
-                {children}
-              </ClientLayoutHandler>
-            </AuthProvider>
+            <LayoutProvider>{children}</LayoutProvider>
           </ToastProvider>
         </ThirdWebClientProvider>
       </body>
