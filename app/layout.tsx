@@ -4,6 +4,8 @@ import "./globals.css";
 import { ThirdWebClientProvider } from "@/components/ThirdWebClientProvider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import LayoutProvider from "@/components/LayoutProvider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,6 +31,8 @@ export default function RootLayout({
             <LayoutProvider>{children}</LayoutProvider>
           </ToastProvider>
         </ThirdWebClientProvider>
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

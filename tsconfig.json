@@ -32,11 +32,14 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    "components/wallet-section.tsx"
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
+    "node_modules/mipd"
   ],
-  "typeRoots": ["./node_modules/@types", "./@types"]
+  "typeRoots": [
+    "./node_modules/@types",
+    "./@types"
+  ]
 }
