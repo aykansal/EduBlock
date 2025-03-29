@@ -176,7 +176,7 @@ const YouTubePlayerComponent = ({
   // Function to save progress to API
   const saveProgress = async (currentProgress: number, completed = false) => {
     try {
-      await axios.post("/api/courses/progress", {
+      await axios.post("/api/course/progress", {
         videoId,
         courseId,
         walletId,

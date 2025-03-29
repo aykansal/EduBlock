@@ -74,12 +74,12 @@ const CourseDetail = () => {
     setError(null);
     try {
       // Fetch course details
-      const courseResponse = await axios.get(`/api/courses/${params.courseId}`);
+      const courseResponse = await axios.get(`/api/course/${params.courseId}`);
       setCourse(courseResponse.data.course);
 
       // Fetch progress for this course
       const progressResponse = await axios.get(
-        `/api/courses/progress?walletId=${account.address}&courseId=${params.courseId}`
+        `/api/course/progress?walletId=${account.address}&courseId=${params.courseId}`
       );
 
       // Create a map of video progress

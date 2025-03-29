@@ -55,7 +55,7 @@ export async function prefetchRouteData(route: string): Promise<void> {
       fetch('/api/dashboard');
     } else if (route === '/courses') {
       // Prefetch courses data
-      fetch('/api/courses');
+      fetch('/api/course');
     } else if (route === '/schedule') {
       // Prefetch schedule data
       fetch('/api/schedule');

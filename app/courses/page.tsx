@@ -69,7 +69,7 @@ const YoutubePlaylist = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post("/api/courses/add", {
+      const response = await axios.post("/api/course/add", {
         playlistId,
         walletId: account.address,
       });

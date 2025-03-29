@@ -32,7 +32,7 @@ async function getUserCourses(walletId = DEFAULT_WALLET_ID) {
     return await cachedFetch(
       `courses_${walletId}`,
       async () => {
-        const response = await axios.get(`/api/courses?walletId=${walletId}`);
+        const response = await axios.get(`/api/course?walletId=${walletId}`);
         return response.data.courses;
       },
       300000 // 5 minutes cache
@@ -49,7 +49,7 @@ async function getCourseDetails(courseId: string, walletId = DEFAULT_WALLET_ID) 
     return await cachedFetch(
       `course_${courseId}_${walletId}`,
       async () => {
-        const response = await axios.get(`/api/courses/${courseId}?walletId=${walletId}`);
+        const response = await axios.get(`/api/course/${courseId}?walletId=${walletId}`);
         return response.data;
       },
       300000 // 5 minutes cache
