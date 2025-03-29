@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { CheckCircle2, XCircle, Clock } from 'lucide-react';
-import axios from 'axios';
-import { useActiveAccount } from 'thirdweb/react';
+import { useEffect, useState } from "react";
+import { CheckCircle2, XCircle, Clock } from "lucide-react";
+import axios from "axios";
+import { useActiveAccount } from "thirdweb/react";
 
 interface Activity {
   id: number;
@@ -17,27 +17,26 @@ export function RecentActivity() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const account = useActiveAccount();
-  
+
   useEffect(() => {
     const fetchActivities = async () => {
       if (!account) return;
       try {
-        const response = await axios.get(`/api/dashboard?walletId=${account.address}`);
+        const response = await axios.get(
+          `/api/dashboard?walletId=${account.address}`
+        );
         if (response.data.recentActivity) {
           setActivities(response.data.recentActivity);
         }
       } catch (error) {
         console.error("Error fetching recent activities:", error);
         // Set some fallback data if fetch fails
-        setActivities([
-          { id: 1, title: "Completed Lecture: Blockchain Basics", type: "completion", date: "2 hours ago" },
-          { id: 2, title: "Earned 50 EDT", type: "reward", date: "1 day ago" }
-        ]);
+        setActivities([]);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchActivities();
   }, [account]);
 
@@ -45,7 +44,10 @@ export function RecentActivity() {
     return (
       <div className="space-y-4">
         {[...Array(3)].map((_, index) => (
-          <div key={index} className="flex items-center space-x-4 animate-pulse">
+          <div
+            key={index}
+            className="flex items-center space-x-4 animate-pulse"
+          >
             <div className="h-5 w-5 rounded-full bg-gray-200" />
             <div className="flex-1 space-y-1">
               <div className="h-4 w-3/4 bg-gray-200 rounded"></div>
@@ -61,7 +63,9 @@ export function RecentActivity() {
     return (
       <div className="text-center py-6 text-gray-500">
         <p>No recent activity to show.</p>
-        <p className="text-sm mt-2">Start watching courses to track your progress!</p>
+        <p className="text-sm mt-2">
+          Start watching courses to track your progress!
+        </p>
       </div>
     );
   }

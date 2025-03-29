@@ -1,291 +1,122 @@
-import { prisma } from '@/lib/db';
-import { NextRequest, NextResponse } from 'next/server';
-import { ApiError, handleApiError } from '@/lib/api-utils';
+import { NextResponse } from "next/server";
+import { Reward, ActivityLog } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
-// Get user dashboard data
-export async function GET(request: NextRequest) {
-    try {
-        const { searchParams } = new URL(request.url);
-        const walletId = searchParams.get('walletId');
+interface ActivityData {
+  rewardAmount?: number;
+  status?: string;
+}
 
-        if (!walletId) {
-            return NextResponse.json(
-                { message: 'Wallet ID is required' },
-                { status: 400 }
-            );
-        }
+interface UserWithRelations {
+  enrolledCourses: Array<{
+    course: {
+      title: string;
+    };
+    progress: number;
+  }>;
+  activityLogs: Array<ActivityLog & { data: ActivityData | null }>;
+  rewards: Reward[];
+}
 
-        // Fetch user
-        const user = await prisma.user.findUnique({
-            where: { walletId },
-        });
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const walletId = searchParams.get("walletId");
 
-        if (!user) {
-            return NextResponse.json(
-                { message: 'User not found' },
-                { status: 404 }
-            );
-        }
-
-        // Fetch current active course and progress
-        const activeCourse = user.activeCourseId 
-            ? await prisma.course.findUnique({
-                where: { id: user.activeCourseId },
-                include: { videos: { orderBy: { position: 'asc' } } }
-              })
-            : null;
-
-        // If no active course is set, get the most recently watched course
-        let currentCourse = activeCourse;
-        let courseProgress = 0;
-
-        if (!currentCourse) {
-            // Get the most recently watched video
-            const latestProgress = await prisma.videoProgress.findFirst({
-                where: { userId: walletId },
-                orderBy: { lastWatched: 'desc' },
-                include: { course: true }
-            });
-
-            if (latestProgress) {
-                currentCourse = await prisma.course.findUnique({
-                    where: { id: latestProgress.courseId },
-                    include: { videos: { orderBy: { position: 'asc' } } }
-                });
-            }
-        }
-
-        // Calculate course progress if we have a current course
-        if (currentCourse) {
-            const videoIds = currentCourse.videos.map(video => video.videoId);
-            
-            // Count completed videos
-            const completedVideos = await prisma.videoProgress.count({
-                where: {
-                    userId: walletId,
-                    videoId: { in: videoIds },
-                    completed: true
-                }
-            });
-            
-            courseProgress = currentCourse.videos.length > 0 
-                ? Math.round((completedVideos / currentCourse.videos.length) * 100) 
-                : 0;
-        }
-
-        // Fetch recent activity (video completions, course enrollments)
-        const recentProgress = await prisma.videoProgress.findMany({
-            where: { userId: walletId },
-            orderBy: { lastWatched: 'desc' },
-            take: 5,
-            include: { 
-                video: true,
-                course: true
-            }
-        });
-
-        // Transform to activity format
-        const recentActivity = recentProgress.map(progress => {
-            let activityType = progress.completed ? 'completion' : 'progress';
-            let title = progress.completed 
-                ? `Completed: ${progress.video.title}` 
-                : `Watched: ${progress.video.title}`;
-            
-            // Calculate relative time
-            const now = new Date();
-            const lastWatched = new Date(progress.lastWatched);
-            const diffMs = now.getTime() - lastWatched.getTime();
-            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const diffDays = Math.floor(diffHours / 24);
-            
-            let date;
-            if (diffHours < 1) {
-                date = 'Just now';
-            } else if (diffHours < 24) {
-                date = `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
-            } else {
-                date = `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
-            }
-            
-            return {
-                id: progress.id,
-                title,
-                type: activityType,
-                date,
-                courseTitle: progress.course.title
-            };
-        });
-
-        // Fetch user's courses for upcoming lectures
-        const userCourses = await prisma.course.findMany({
-            where: { userId: walletId },
-            include: {
-                videos: {
-                    orderBy: { position: 'asc' },
-                    take: 5
-                }
-            },
-            orderBy: { updatedAt: 'desc' }
-        });
-
-        // Get scheduled lectures for next 7 days
-        const now = new Date();
-        const nextWeek = new Date(now);
-        nextWeek.setDate(now.getDate() + 7);
-
-        const scheduledLectures = await prisma.scheduledLecture.findMany({
-            where: {
-                userId: walletId,
-                date: {
-                    gte: now,
-                    lte: nextWeek
-                }
-            },
-            include: {
-                video: true,
-                course: true
-            },
-            orderBy: {
-                date: 'asc'
-            },
-            take: 5
-        });
-
-        // Format scheduled lectures for display
-        const upcomingLectures = scheduledLectures.map(lecture => {
-            // Format date for display
-            const lectureDate = new Date(lecture.date);
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(today.getDate() + 1);
-            
-            // Format the date as Today, Tomorrow, or day of week
-            let formattedDate;
-            if (lectureDate.toDateString() === today.toDateString()) {
-                formattedDate = 'Today';
-            } else if (lectureDate.toDateString() === tomorrow.toDateString()) {
-                formattedDate = 'Tomorrow';
-            } else {
-                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                const dayName = days[lectureDate.getDay()];
-                formattedDate = dayName;
-            }
-            
-            // Add time to date
-            const hours = lectureDate.getHours();
-            const minutes = lectureDate.getMinutes();
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            const hour12 = hours % 12 || 12;
-            const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
-            formattedDate += `, ${hour12}:${minutesStr} ${ampm}`;
-            
-            // Format duration
-            const hours_duration = Math.floor(lecture.duration / 60);
-            const minutes_duration = lecture.duration % 60;
-            const durationStr = hours_duration > 0 
-                ? `${hours_duration} hour${hours_duration > 1 ? 's' : ''}${minutes_duration > 0 ? ` ${minutes_duration} min` : ''}`
-                : `${minutes_duration} minutes`;
-            
-            return {
-                id: lecture.id,
-                title: lecture.title || lecture.video.title,
-                courseTitle: lecture.course.title,
-                date: formattedDate,
-                duration: durationStr
-            };
-        });
-
-        // If no scheduled lectures, add suggested ones based on uncompleted videos
-        if (upcomingLectures.length === 0 && userCourses.length > 0) {
-            // Create suggested upcoming lectures from uncompleted videos
-            const suggestedLectures = [];
-            
-            for (const course of userCourses) {
-                for (const video of course.videos) {
-                    // Check if this video is completed
-                    const videoProgress = await prisma.videoProgress.findUnique({
-                        where: {
-                            userId_videoId: {
-                                userId: walletId,
-                                videoId: video.videoId
-                            }
-                        }
-                    });
-                    
-                    // If not completed, add to suggested lectures
-                    if (!videoProgress || !videoProgress.completed) {
-                        // Generate date based on video position
-                        const today = new Date();
-                        const futureDate = new Date(today);
-                        futureDate.setDate(today.getDate() + video.position % 5); // Spread over next 5 days
-                        
-                        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                        const dayName = days[futureDate.getDay()];
-                        
-                        // Generate a random time
-                        const hours = 9 + Math.floor(Math.random() * 8); // 9 AM to 5 PM
-                        const ampm = hours >= 12 ? 'PM' : 'AM';
-                        const hour12 = hours % 12 || 12;
-                        
-                        suggestedLectures.push({
-                            id: video.id,
-                            title: video.title,
-                            courseTitle: course.title,
-                            date: video.position === 0 ? 'Today' : 
-                                   video.position === 1 ? 'Tomorrow' : 
-                                   `${dayName}, ${hour12}:00 ${ampm}`,
-                            duration: '1 hour',  // Default duration
-                            suggested: true
-                        });
-                        
-                        // Only add up to 5 suggested lectures
-                        if (suggestedLectures.length >= 5) break;
-                    }
-                }
-                
-                if (suggestedLectures.length >= 5) break;
-            }
-            
-            // Add suggested lectures to upcoming lectures array
-            upcomingLectures.push(...suggestedLectures);
-        }
-
-        // Get total token balance (placeholder - this would be replaced with actual token logic)
-        const tokenBalance = 250;
-        const weeklyTokens = 50;
-
-        return NextResponse.json({
-            currentCourse: currentCourse ? {
-                id: currentCourse.id,
-                title: currentCourse.title,
-                progress: courseProgress
-            } : null,
-            tokenBalance,
-            weeklyTokens,
-            nextMilestone: {
-                tokens: 75,
-                description: "Complete 5 more lectures"
-            },
-            focusScore: {
-                score: 92,
-                percentile: 5
-            },
-            recentActivity,
-            upcomingLectures,
-            courses: userCourses.map(course => ({
-                id: course.id,
-                title: course.title,
-                createdAt: course.createdAt,
-                videoCount: course.videoCount
-            }))
-        });
-
-    } catch (error: any) {
-        console.error('Error fetching dashboard data:', error);
-        const { error: errorMessage, status } = handleApiError(error);
-        return NextResponse.json(
-            { message: 'Error fetching dashboard data', details: errorMessage },
-            { status }
-        );
+    if (!walletId) {
+      return NextResponse.json(
+        { error: "Wallet ID is required" },
+        { status: 400 }
+      );
     }
+
+    // Get user data with all necessary relations
+    const user = await prisma.user.findUnique({
+      where: { walletId },
+      include: {
+        enrolledCourses: {
+          where: { status: "IN_PROGRESS" },
+          include: {
+            course: true,
+          },
+        },
+        activityLogs: {
+          where: {
+            createdAt: {
+              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
+            },
+          },
+        },
+        rewards: {
+          where: { status: "EARNED" },
+        },
+      },
+    }) as UserWithRelations | null;
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Calculate current course and progress
+    const currentEnrollment = user.enrolledCourses[0];
+    const currentCourse = currentEnrollment?.course || null;
+    const courseProgress = currentEnrollment?.progress || 0;
+
+    // Calculate token balance and weekly earnings
+    const tokenBalance = user.rewards.reduce((acc: number, reward: Reward) => acc + reward.amount, 0);
+    const weeklyEarnings = user.activityLogs.reduce((acc: number, log: ActivityLog & { data: ActivityData | null }) => {
+      return acc + (log.data?.rewardAmount || 0);
+    }, 0);
+
+    // Calculate focus score based on activity logs
+    const totalActivities = user.activityLogs.length;
+    const completedActivities = user.activityLogs.filter((log: ActivityLog & { data: ActivityData | null }) => {
+      return log.data?.status === "COMPLETED";
+    }).length;
+    const focusScore = totalActivities > 0 ? Math.round((completedActivities / totalActivities) * 100) : 0;
+
+    // Calculate user rank (simplified version)
+    const allUsers = await prisma.user.findMany({
+      include: {
+        activityLogs: true,
+      },
+    });
+    
+    const userRank = allUsers
+      .map((u: { walletId: string; activityLogs: ActivityLog[] }) => ({
+        walletId: u.walletId,
+        score: u.activityLogs.length,
+      }))
+      .sort((a: { score: number }, b: { score: number }) => b.score - a.score)
+      .findIndex((u: { walletId: string }) => u.walletId === walletId) + 1;
+    
+    const rankPercentage = Math.round((userRank / allUsers.length) * 100);
+
+    // Calculate next milestone
+    const nextMilestone = {
+      amount: 100, // Base milestone amount
+      requirement: "Complete 5 more lectures",
+    };
+
+    return NextResponse.json({
+      currentCourse: {
+        title: currentCourse?.title || "No active course",
+        progress: courseProgress,
+      },
+      tokenBalance,
+      weeklyEarnings,
+      nextMilestone,
+      focusScore,
+      rank: rankPercentage,
+    });
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch dashboard data" },
+      { status: 500 }
+    );
+  }
 }

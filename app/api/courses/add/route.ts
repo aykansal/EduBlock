@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import { Item, PlaylistItemListResponse } from '@/types/courses';
 import axios from 'axios';
 import { NextRequest, NextResponse } from 'next/server';

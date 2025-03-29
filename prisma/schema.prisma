@@ -13,8 +13,9 @@ model User {
   email    String? @unique
   avatar   String? // User avatar URL
 
-  // Course relation
+  // Course relations
   courses        Course[] @relation("UserCourses")
+  enrolledCourses CourseEnrollment[]
   // activeCourse   Course?  @relation("ActiveCourse", fields: [activeCourseId], references: [id])
   activeCourseId Int?     @unique
 
@@ -29,6 +30,9 @@ model User {
   currentStreak Int @default(0)
   bestStreak    Int @default(0)
   lastActivityDate DateTime?
+
+  // Rewards
+  rewards Reward[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -53,7 +57,6 @@ model Course {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   // Relation to the user
-
   userId String
   User   User   @relation("UserCourses", fields: [userId], references: [walletId])
 
@@ -62,6 +65,9 @@ model Course {
   
   // Scheduled lectures relation
   scheduledLectures ScheduledLecture[]
+
+  // Course enrollments
+  enrollments CourseEnrollment[]
 }
 
 model Video {
@@ -126,6 +132,34 @@ model ActivityLog {
   type      String   // e.g., 'video_watched', 'course_completed', etc.
   data      Json?    // Additional activity data
   createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model CourseEnrollment {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [walletId])
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id])
+  status    String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, DROPPED
+  progress  Int      @default(0) // Overall course progress percentage
+  enrolledAt DateTime @default(now())
+  completedAt DateTime?
+
+  @@unique([userId, courseId])
+}
+
+model Reward {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [walletId])
+  amount    Int      // Amount of tokens
+  type      String   // e.g., 'course_completion', 'streak_bonus', etc.
+  status    String   @default("EARNED") // EARNED, REDEEMED, EXPIRED
+  data      Json?    // Additional reward data
+  createdAt DateTime @default(now())
+  redeemedAt DateTime?
 
   @@index([userId, createdAt])
 }

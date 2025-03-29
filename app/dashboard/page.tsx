@@ -1,3 +1,5 @@
+"use client";
+
 import { RecentActivity } from "@/components/recent-activity";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,8 +13,80 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UpcomingLectures } from "@/components/upcoming-lectures";
 import { CalendarDays, GraduationCap, Trophy } from "lucide-react";
+import { useActiveAccount } from "thirdweb/react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useDataFetching } from "@/hooks/use-data-fetching";
+import { getStreak } from "@/lib/streak-utils";
+
+interface DashboardData {
+  currentCourse: {
+    title: string;
+    progress: number;
+  };
+  tokenBalance: number;
+  weeklyEarnings: number;
+  nextMilestone: {
+    amount: number;
+    requirement: string;
+  };
+  focusScore: number;
+  rank: number;
+}
+
+async function fetchDashboardData(walletId: string) {
+  const response = await axios.get(`/api/dashboard?walletId=${walletId}`);
+  return response.data;
+}
 
 export default function DashboardPage() {
+  const account = useActiveAccount();
+  const { data: dashboardData, isLoading } = useDataFetching(
+    fetchDashboardData,
+    {
+      skipIfNoWallet: true,
+      defaultValue: {
+        currentCourse: { title: "No active course", progress: 0 },
+        tokenBalance: 0,
+        weeklyEarnings: 0,
+        nextMilestone: { amount: 0, requirement: "No milestone set" },
+        focusScore: 0,
+        rank: 0
+      }
+    }
+  );
+
+  const { data: streakData } = useDataFetching(
+    getStreak,
+    {
+      skipIfNoWallet: true,
+      defaultValue: { currentStreak: 0, bestStreak: 0 }
+    }
+  );
+
+  if (!account) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold mb-4">Connect Your Wallet</h2>
+          <p className="text-muted-foreground">
+            Please connect your wallet to view your dashboard.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto px-6 py-8 container">
       <h1 className="mb-6 font-semibold text-3xl text-gray-800">
@@ -28,11 +102,11 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="font-bold text-2xl">
-              Introduction to Blockchain
+              {dashboardData.currentCourse.title}
             </div>
-            <Progress value={33} className="mt-2" />
+            <Progress value={dashboardData.currentCourse.progress} className="mt-2" />
             <p className="mt-2 text-muted-foreground text-xs">
-              33% complete
+              {dashboardData.currentCourse.progress}% complete
             </p>
           </CardContent>
         </Card>
@@ -44,9 +118,9 @@ export default function DashboardPage() {
             <Trophy className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="font-bold text-2xl">250 EDT</div>
+            <div className="font-bold text-2xl">{dashboardData.tokenBalance} EDT</div>
             <p className="mt-2 text-muted-foreground text-xs">
-              +50 EDT this week
+              +{dashboardData.weeklyEarnings} EDT this week
             </p>
           </CardContent>
         </Card>
@@ -58,9 +132,9 @@ export default function DashboardPage() {
             <CalendarDays className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="font-bold text-2xl">75 EDT</div>
+            <div className="font-bold text-2xl">{dashboardData.nextMilestone.amount} EDT</div>
             <p className="mt-2 text-muted-foreground text-xs">
-              Complete 5 more lectures
+              {dashboardData.nextMilestone.requirement}
             </p>
           </CardContent>
         </Card>
@@ -72,9 +146,9 @@ export default function DashboardPage() {
             <Trophy className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="font-bold text-2xl">92%</div>
+            <div className="font-bold text-2xl">{dashboardData.focusScore}%</div>
             <p className="mt-2 text-muted-foreground text-xs">
-              Top 5% of all users
+              Top {dashboardData.rank}% of all users
             </p>
           </CardContent>
         </Card>
@@ -128,7 +202,12 @@ export default function DashboardPage() {
                       Get a verified certificate for completing this
                       course.
                     </p>
-                    <Button className="mt-4 w-full">Redeem</Button>
+                    <Button 
+                      className="mt-4 w-full"
+                      disabled={dashboardData.tokenBalance < 100}
+                    >
+                      {dashboardData.tokenBalance < 100 ? "Insufficient Balance" : "Redeem"}
+                    </Button>
                   </CardContent>
                 </Card>
                 <Card>
@@ -141,7 +220,12 @@ export default function DashboardPage() {
                       30-minute one-on-one session with a course
                       instructor.
                     </p>
-                    <Button className="mt-4 w-full">Redeem</Button>
+                    <Button 
+                      className="mt-4 w-full"
+                      disabled={dashboardData.tokenBalance < 250}
+                    >
+                      {dashboardData.tokenBalance < 250 ? "Insufficient Balance" : "Redeem"}
+                    </Button>
                   </CardContent>
                 </Card>
                 <Card>
@@ -153,7 +237,12 @@ export default function DashboardPage() {
                     <p>
                       Unlock access to a premium course of your choice.
                     </p>
-                    <Button className="mt-4 w-full">Redeem</Button>
+                    <Button 
+                      className="mt-4 w-full"
+                      disabled={dashboardData.tokenBalance < 500}
+                    >
+                      {dashboardData.tokenBalance < 500 ? "Insufficient Balance" : "Redeem"}
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
