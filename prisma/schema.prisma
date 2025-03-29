@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  walletId String  @id @unique
+  username String  @unique // ask user on signup itself
+  email    String? @unique
+  avatar   String? // User avatar URL
+
+  // Course relations
+  courses        Course[] @relation("UserCourses")
+  enrolledCourses CourseEnrollment[]
+  // activeCourse   Course?  @relation("ActiveCourse", fields: [activeCourseId], references: [id])
+  activeCourseId Int?     @unique
+
+  // Video progress relation
+  videoProgress VideoProgress[]
+  
+  // Scheduled lectures relation
+  scheduledLectures ScheduledLecture[]
+
+  // Activity and streak tracking
+  activityLogs ActivityLog[]
+  currentStreak Int @default(0)
+  bestStreak    Int @default(0)
+  lastActivityDate DateTime?
+
+  // Rewards
+  rewards Reward[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Settings
+  notificationsEnabled Boolean? @default(true)
+  darkModeEnabled      Boolean? @default(false)
+  soundEffectsEnabled  Boolean? @default(true)
+
+  // Learning Preferences
+  sessionDuration Int? @default(40) // in minutes
+  breakDuration   Int? @default(5) // in minutes
+  sessionsPerDay  Int? @default(4)
+}
+
+model Course {
+  id         Int      @id @default(autoincrement())
+  playlistId String   @unique // course ID
+  title      String
+  videos     Video[]  @relation("CourseVideos")
+  videoCount Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  // Relation to the user
+  userId String
+  User   User   @relation("UserCourses", fields: [userId], references: [walletId])
+
+  // Video progress relation
+  videoProgress VideoProgress[]
+  
+  // Scheduled lectures relation
+  scheduledLectures ScheduledLecture[]
+
+  // Course enrollments
+  enrollments CourseEnrollment[]
+}
+
+model Video {
+  id           Int      @id @default(autoincrement())
+  videoId      String   @unique // Make videoId unique to reference it in VideoProgress
+  title        String
+  thumbnail    String
+  position     Int
+  channelTitle String
+  channelId    String
+  playlistId   String
+  playlist     Course   @relation("CourseVideos", fields: [playlistId], references: [playlistId])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Video progress relation
+  videoProgress VideoProgress[]
+  
+  // Scheduled lectures relation
+  scheduledLectures ScheduledLecture[]
+}
+
+model VideoProgress {
+  id          Int      @id @default(autoincrement())
+  userId      String
+  videoId     String
+  courseId    Int
+  progress    Float    @default(0) // Percentage of video watched (0-100)
+  completed   Boolean  @default(false)
+  lastWatched DateTime @default(now())
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [walletId])
+  course Course @relation(fields: [courseId], references: [id])
+  video  Video  @relation(fields: [videoId], references: [videoId])
+
+  // Compound unique index to ensure one progress record per user per video
+  @@unique([userId, videoId])
+}
+
+model ScheduledLecture {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [walletId])
+  videoId   String
+  video     Video    @relation(fields: [videoId], references: [videoId])
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id])
+  date      DateTime
+  duration  Int      @default(60) // Duration in minutes
+  title     String?  // Optional custom title
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, videoId, date])
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [walletId])
+  type      String   // e.g., 'video_watched', 'course_completed', etc.
+  data      Json?    // Additional activity data
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model CourseEnrollment {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [walletId])
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id])
+  status    String   @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, DROPPED
+  progress  Int      @default(0) // Overall course progress percentage
+  enrolledAt DateTime @default(now())
+  completedAt DateTime?
+
+  @@unique([userId, courseId])
+}
+
+model Reward {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [walletId])
+  amount    Int      // Amount of tokens
+  type      String   // e.g., 'course_completion', 'streak_bonus', etc.
+  status    String   @default("EARNED") // EARNED, REDEEMED, EXPIRED
+  data      Json?    // Additional reward data
+  createdAt DateTime @default(now())
+  redeemedAt DateTime?
+
+  @@index([userId, createdAt])
+}

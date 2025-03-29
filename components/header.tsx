@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { Bell, Settings } from 'lucide-react'
-import { Button } from "@/components/ui/button"
+import { Bell, Settings, Flame } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,23 +9,54 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Progress } from "@/components/ui/progress"
-import { usePathname } from "next/navigation"
+} from "@/components/ui/dropdown-menu";
+import { Progress } from "@/components/ui/progress";
+import { usePathname } from "next/navigation";
+import { useActiveAccount } from "thirdweb/react";
+import { useDataFetching } from "@/hooks/use-data-fetching";
+import Link from "next/link";
+import { getStreak } from "@/lib/streak-utils";
+
+// Define which paths should show the streak
+const STREAK_PATHS = [
+  "/dashboard",
+  "/courses",
+  "/progress",
+  "/schedule",
+  "/leaderboard",
+  "/rewards",
+];
 
 export function Header() {
-  const pathname = usePathname()
-  const showProgress = pathname.startsWith("/courses")
+  const pathname = usePathname();
+  const account = useActiveAccount();
+  const showStreak = STREAK_PATHS.some((path) => pathname.startsWith(path));
+
+  const { data: streakData, isLoading } = useDataFetching(getStreak, {
+    skipIfNoWallet: true,
+    defaultValue: { currentStreak: 0, bestStreak: 0 },
+  });
 
   return (
     <header className="bg-background border-b border-border">
       <div className="flex items-center justify-between px-6 py-4">
         <h2 className="font-semibold text-xl">EduBlock</h2>
         <div className="flex items-center space-x-4">
-          {showProgress && (
-            <div className="flex items-center space-x-2">
-              <Progress value={33} className="w-40" />
-              <span className="text-sm text-muted-foreground">33% complete</span>
+          {showStreak && !isLoading && (
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
+                <Progress value={streakData.currentStreak} className="w-40" />
+                <div className="flex items-center text-sm">
+                  <Flame className="h-4 w-4 text-orange-500 mr-1" />
+                  <span className="font-medium">
+                    {streakData.currentStreak}
+                  </span>
+                  <span className="text-muted-foreground ml-1">day streak</span>
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Best: {streakData.bestStreak}
+              </div>
             </div>
           )}
           <Button variant="ghost" size="icon">
@@ -38,11 +69,25 @@ export function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel><a href="">My Account</a></DropdownMenuLabel>
+              <DropdownMenuLabel>
+                <Link href="/profile">My Account</Link>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem><a href="">Settings</a></DropdownMenuItem>
-              <DropdownMenuItem>Help</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="/profile" className="w-full">
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="/settings" className="w-full">
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="/help" className="w-full">
+                  Help
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Log out</DropdownMenuItem>
             </DropdownMenuContent>
@@ -50,6 +95,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
-

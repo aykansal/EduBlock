@@ -1,40 +1,39 @@
-import { Metadata } from "next"
-import { Inter } from 'next/font/google'
+import { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { ThirdWebClientProvider } from "@/components/ThirdWebClientProvider";
+import { ToastProvider } from "@/components/providers/toast-provider";
+import LayoutProvider from "@/components/LayoutProvider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react";
 
-import "./globals.css"
-import { Sidebar } from "@/components/sidebar"
-import { Header } from "@/components/header"
-import { ThirdWebClientProvider } from "@/components/ThirdWebClientProvider"
-
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
-  title: "EduBlock",
-  description: "Blockchain learning platform",
-}
+  title: "EduBlock - Blockchain Learning Platform",
+  description: "Learn blockchain and earn tokens",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
       <body className={inter.className}>
         <ThirdWebClientProvider>
-          
-        <div className="flex h-screen bg-background">
-          <Sidebar />
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <Header />
-            <main className="flex-1 overflow-auto">
-              {children}
-            </main>
-          </div>
-        </div>
+          <ToastProvider>
+            <LayoutProvider>{children}</LayoutProvider>
+          </ToastProvider>
         </ThirdWebClientProvider>
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
-  )
+  );
 }
-
