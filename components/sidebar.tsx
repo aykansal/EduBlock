@@ -63,7 +63,7 @@ export function Sidebar() {
       <div className="flex justify-center items-center border-b border-border h-16">
         <span className="font-bold text-primary uppercase">EduBlock</span>
       </div>
-      <nav className="flex-grow">
+      <nav className="grow">
         <ul className="flex flex-col py-4">
           {links.map((link) => (
             <li key={link.href}>

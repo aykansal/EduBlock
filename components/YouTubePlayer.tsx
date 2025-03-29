@@ -272,7 +272,7 @@ const YouTubePlayerComponent = ({
       />
 
       {/* Custom Controls Overlay */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 transition-opacity duration-300 hover:opacity-100 opacity-0 hover:opacity-100 group">
+      <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 to-transparent p-3 transition-opacity duration-300 hover:opacity-100 opacity-0 hover:opacity-100 group">
         {/* Progress Bar */}
         <div
           ref={progressBarRef}

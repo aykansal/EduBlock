@@ -70,7 +70,7 @@ export function LearningPreferences({ preferences, updatePreferences }: Learning
               step={5}
               value={[sessionDuration]}
               onValueChange={(value) => handleSessionDurationChange(value[0])}
-              className="flex-grow"
+              className="grow"
             />
             <Input
               type="number"
@@ -91,7 +91,7 @@ export function LearningPreferences({ preferences, updatePreferences }: Learning
               step={1}
               value={[breakDuration]}
               onValueChange={(value) => handleBreakDurationChange(value[0])}
-              className="flex-grow"
+              className="grow"
             />
             <Input
               type="number"
@@ -112,7 +112,7 @@ export function LearningPreferences({ preferences, updatePreferences }: Learning
               step={1}
               value={[sessionsPerDay]}
               onValueChange={(value) => handleSessionsPerDayChange(value[0])}
-              className="flex-grow"
+              className="grow"
             />
             <Input
               type="number"

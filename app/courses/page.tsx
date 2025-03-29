@@ -23,7 +23,7 @@ const validateUrl = (url: string) => {
 
 const CourseThumbnailFallback = ({ title }: { title: string }) => {
   return (
-    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100 rounded-lg">
+    <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-blue-50 to-gray-100 rounded-lg">
       <div className="flex flex-col items-center justify-center p-4 text-center">
         <BookOpen className="text-blue-400 mb-2" size={32} />
         <span className="text-sm text-gray-600 font-medium line-clamp-2">
@@ -119,7 +119,7 @@ const YoutubePlaylist = () => {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="Enter YouTube playlist URL"
-                className="flex-1 px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="flex-1 px-4 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
                 required
               />
               <Button
@@ -178,7 +178,7 @@ const YoutubePlaylist = () => {
                         <div className="hidden absolute inset-0">
                           <CourseThumbnailFallback title={course.title} />
                         </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity"></div>
+                        <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity"></div>
                       </div>
                       <h3 className="font-semibold text-lg mb-2 line-clamp-2">
                         {course.title}

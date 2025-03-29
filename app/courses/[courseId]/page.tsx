@@ -370,7 +370,7 @@ const CourseDetail = () => {
                       }`}
                     >
                       <div className="flex gap-3">
-                        <div className="relative flex-shrink-0 w-24 h-16">
+                        <div className="relative shrink-0 w-24 h-16">
                           <img
                             src={video.thumbnail}
                             alt={video.title}

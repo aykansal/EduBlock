@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white py-16 md:py-24">
+    <section className="relative overflow-hidden bg-linear-to-b from-blue-50 to-white py-16 md:py-24">
       {/* Background elements */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute w-64 h-64 rounded-full bg-blue-100 -top-10 -right-16 opacity-50" />
@@ -48,15 +48,15 @@ export function HeroSection() {
 
         {/* Stats */}
         <div className="mt-16 max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-center">
+          <div className="bg-white rounded-xl p-6 shadow-xs border border-gray-100 text-center">
             <p className="text-3xl font-bold text-blue-600 mb-1">100+</p>
             <p className="text-gray-600 text-sm">YouTube Playlists</p>
           </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-center">
+          <div className="bg-white rounded-xl p-6 shadow-xs border border-gray-100 text-center">
             <p className="text-3xl font-bold text-blue-600 mb-1">20+</p>
             <p className="text-gray-600 text-sm">Topic Categories</p>
           </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-center">
+          <div className="bg-white rounded-xl p-6 shadow-xs border border-gray-100 text-center">
             <p className="text-3xl font-bold text-blue-600 mb-1">1M+</p>
             <p className="text-gray-600 text-sm">EduTokens Earned</p>
           </div>
