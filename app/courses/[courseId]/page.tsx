@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { useActiveAccount } from "thirdweb/react";
+import { updateStreak } from "@/lib/streak-utils";
 
 // Dynamically import the YouTube player component to avoid SSR issues
 const YouTubePlayer = dynamic(() => import("@/components/YouTubePlayer"), {
@@ -164,33 +165,49 @@ const CourseDetail = () => {
     }
   };
 
-  const handleVideoEnd = () => {
-    if (!course || !selectedVideo) return;
+  const handleVideoEnd = async () => {
+    if (!course || !selectedVideo || !account) return;
 
-    // Mark current video as complete
-    setVideoProgress((prev) => ({
-      ...prev,
-      [selectedVideo.videoId]: {
-        videoId: selectedVideo.videoId,
-        progress: 100,
-        completed: true,
-      },
-    }));
+    try {
+      // Mark current video as complete
+      setVideoProgress((prev) => ({
+        ...prev,
+        [selectedVideo.videoId]: {
+          videoId: selectedVideo.videoId,
+          progress: 100,
+          completed: true,
+        },
+      }));
 
-    // Find the next video in sequence
-    const currentIndex = course.videos.findIndex(
-      (v) => v.videoId === selectedVideo.videoId
-    );
+      // Check if this was the last video in the course
+      const allVideosCompleted = course.videos.every(
+        (video) => videoProgress[video.videoId]?.completed
+      );
 
-    if (currentIndex < course.videos.length - 1) {
-      // Auto-play next video with a slight delay
-      setTimeout(() => {
-        handleVideoSelect(course.videos[currentIndex + 1]);
-        toast.success("Moving to next video");
-      }, 1500);
-    } else {
-      // Course completed
-      toast.success("Course completed! 🎉");
+      if (allVideosCompleted) {
+        // Update streak for course completion
+        await updateStreak(account.address, "course_completed", {
+          courseId: course.id,
+          courseTitle: course.title,
+        });
+        toast.success("Course completed! 🎉");
+      }
+
+      // Find the next video in sequence
+      const currentIndex = course.videos.findIndex(
+        (v) => v.videoId === selectedVideo.videoId
+      );
+
+      if (currentIndex < course.videos.length - 1) {
+        // Auto-play next video with a slight delay
+        setTimeout(() => {
+          handleVideoSelect(course.videos[currentIndex + 1]);
+          toast.success("Moving to next video");
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Error handling video end:", error);
+      toast.error("Failed to update progress");
     }
   };
 
@@ -293,7 +310,7 @@ const CourseDetail = () => {
                     <p className="text-gray-600">Loading video...</p>
                   </div>
                 </div>
-              ) : selectedVideo ? (
+              ) : selectedVideo && account ? (
                 <YouTubePlayer
                   videoId={selectedVideo.videoId}
                   courseId={course.id}

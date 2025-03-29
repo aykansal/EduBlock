@@ -30,6 +30,8 @@ export async function POST(req: Request) {
       data: {
         username,
         walletId: walletAddress,
+        currentStreak: 0,
+        bestStreak: 0,
       }
     });
 
@@ -46,14 +48,28 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const walletAddress = searchParams.get('walletAddress');
+    const walletId = searchParams.get('walletId');
+    const streakOnly = searchParams.get('streak') === 'true';
 
-    if (!walletAddress) {
+    if (!walletId) {
       throw new ApiError('Wallet address is required', 400, 'MISSING_WALLET');
     }
 
+    // If streak information is requested, redirect to streak endpoint
+    if (streakOnly) {
+      const response = await fetch(`${req.url.split('?')[0]}/streak?walletId=${walletId}`);
+      const data = await response.json();
+      return NextResponse.json(data);
+    }
+
     const user = await prisma.user.findUnique({
-      where: { walletId: walletAddress }
+      where: { walletId },
+      include: {
+        activityLogs: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        }
+      }
     });
 
     if (!user) {

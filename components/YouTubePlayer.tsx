@@ -12,6 +12,7 @@ import {
   SkipForward,
   RotateCcw,
 } from "lucide-react";
+import { updateStreak } from "@/lib/streak-utils";
 
 // Import the youtube-player dynamically to avoid SSR issues
 let YouTubePlayer: any = null;
@@ -182,6 +183,16 @@ const YouTubePlayerComponent = ({
         progress: currentProgress,
         completed,
       });
+
+      // Update streak when video is completed or significant progress is made
+      if (completed || currentProgress >= 80) {
+        await updateStreak(walletId, 'video_watched', {
+          videoId,
+          courseId,
+          progress: currentProgress,
+          completed
+        });
+      }
     } catch (error) {
       console.error("Error saving video progress:", error);
     }

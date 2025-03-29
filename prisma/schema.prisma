@@ -24,6 +24,12 @@ model User {
   // Scheduled lectures relation
   scheduledLectures ScheduledLecture[]
 
+  // Activity and streak tracking
+  activityLogs ActivityLog[]
+  currentStreak Int @default(0)
+  bestStreak    Int @default(0)
+  lastActivityDate DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -111,4 +117,15 @@ model ScheduledLecture {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, videoId, date])
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [walletId])
+  type      String   // e.g., 'video_watched', 'course_completed', etc.
+  data      Json?    // Additional activity data
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
